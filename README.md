@@ -28,7 +28,7 @@ PASSWORD=$(pass show udes/password)
 par
 ```bash
 USERNAME="cip@usherbrooke.ca"
-PASSWORD="monmotdepasseinpossibleatrouver"
+PASSWORD="monmotdepasseimpossibleatrouver"
 ```
 
 ## Usage
