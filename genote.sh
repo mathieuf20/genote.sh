@@ -93,7 +93,8 @@ sed \
 sed \
 	-e 's/^://g' \
 	-e '/notes.php/!d' \
-	-e 's/notes.php?//g' > $PARSED_FILE
+	-e 's/notes.php?//g' |
+sort > $PARSED_FILE
 
 
 if [ "$1" = "all" ]; then
