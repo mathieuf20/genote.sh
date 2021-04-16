@@ -110,8 +110,6 @@ else
 	if [ ! -z "$choice" ]; then
 		sigle=$(echo $choice | awk '{print $1}')
 		print_notes $sigle
-	else
-		echo "Choix invalide..."
 	fi
 fi
 
