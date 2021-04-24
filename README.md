@@ -2,7 +2,7 @@
 
 Script pour visualiser les notes d'évaluations de l'Université de Sherbrooke disponibles sur [Genote](https://www.usherbrooke.ca/genote) depuis le terminal.
 
-Pour l'instant, ce script est relativement simple puisqu'il ne permet que de visualiser les notes de la session courante. Si un cours n'a pas de notes disponibles pour le moment, il n'apparait pas dans le choix.
+Pour l'instant, on ne peut qu'afficher un cours à la fois avec un menu interractif, tout les cours de la dernière session ayant reçu des notes (session courante si il y a lieu) ou toutes les notes de toutes les sessions. Si un cours n'a pas de notes disponibles pour le moment, il n'apparait pas dans le choix.
 
 Le code n'est pas très propre pour le moment car il a été fait rapidement sans trop réfléchir. Votre contribution serait très appréciée afin de l'optimiser/le rendre moins dégueux. :P
 
