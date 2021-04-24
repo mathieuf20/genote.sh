@@ -37,7 +37,12 @@ Pour voir un menu interractif pour sélectionner un seul cours:
 ./genote.sh
 ```
 
-Pour voir les notes de tous les cours sans menu interractif:
+Pour voir les notes de tous les cours de la session courante/dernière session avec notes sans menu interractif:
+```
+./genote.sh last
+```
+
+Pour voir les notes de tous les cours de toutes les sessions avec notes sans menu interractif:
 ```
 ./genote.sh all
 ```

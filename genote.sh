@@ -111,11 +111,11 @@ grep "\"coursetudiant\"" $COURS_FILE |\
 		-e '/^\s*$/d' |\
 	sort -t: -k5,5r -k2,2 > $PARSED_FILE
 
-if [ "$1" = "all" ]; then
+if [ "$1" = "last" -o "$1" = "all" ]; then
 	derniere_session=$(sed 1q $PARSED_FILE | awk -F':' '{print $5}')
 	while read cours
 	do
-		if [ "$(echo $cours | awk -F':' '{print $5}')" = "$derniere_session" ]; then
+		if [ "$1" = "all" -o "$(echo $cours | awk -F':' '{print $5}')" = "$derniere_session" ]; then
 			sigle=$(echo $cours | awk -F':' '{printf "%s - %s\n", $2, $1}')
 			print_notes $sigle
 			echo
