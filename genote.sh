@@ -5,7 +5,7 @@ print_notes() {
 		curl -G -s "https://www.usherbrooke.ca/genote/application/etudiant/notes.php" \
 			--data-urlencode "$url" -b $COOKIE_JAR > $NOTES_FILE$1
 	
-		echo $(grep $1 $PARSED_FILE | awk -F':' '{printf "%s - %s\n", $2, $1}')
+		echo $(grep $1 $PARSED_FILE | awk -F':' '{printf "%s - %s\\nEnseignant.e.s: %s\\nTrimestre: %s", $2, $1, $3, $5}')
 		echo ===========================================================
 		sed \
 			-e '1,/<table class="zebra"/d' \
@@ -73,42 +73,58 @@ curl -s -k -b $COOKIE_JAR -c $COOKIE_JAR $CURL_DEST_TRIM
 curl -s 'https://www.usherbrooke.ca/genote/application/etudiant/cours.php' \
 	-b $COOKIE_JAR > $COURS_FILE
 
-sed \
-	-e '1,/<tbody>/d' \
-	-e '/<\/tbody>/,$d' \
-	-e '/<tr>/d' \
-	-e 's/<td class="coursetudiant">/:/g' \
-	-e 's/<span.*\/span>//g' $COURS_FILE | \
-tr '\n' ' ' | \
-sed \
-	-e 's/<\/td>/\n/g' \
-	-e 's/<a href="//g' \
-	-e 's/">Consulter<\/a>//g' | \
-tr '\n' ' ' | \
-sed \
-	-e 's/<\/tr>/\n/g' \
-	-e 's/ *:/:/g' \
-	-e 's/ (/:/g' \
-	-e 's/)//g' | \
-sed \
-	-e 's/^://g' \
-	-e '/notes.php/!d' \
-	-e 's/notes.php?//g' |
-sort > $PARSED_FILE
-
+grep "\"coursetudiant\"" $COURS_FILE |\
+	sed \
+		-e 's/coursetudiant"><\/td>/coursetudiant">notes.php=NONE<\/td>/g' |\
+	sed \
+		-e 's/<td class="coursetudiant">/:/g'\
+		-e 's/<span.*\/span>//g' |\
+	tr '\n' ' ' |\
+	sed \
+		-e 's/<\/td>/\n/g'\
+		-e 's/<a href="//g'\
+		-e 's/">Consulter<\/a>//g'\
+		-e 's/ *: */:/g'\
+		-e 's/ *$//g' |\
+	sed \
+		-e 's/:$//g' |\
+	sed \
+		-e '/^$/d'\
+		-e 's/:notes.*$/&\n:::/g' |\
+	tr '\n' ' ' |\
+	sed \
+		-e 's/:::/\n/g' |\
+	sed \
+		-e 's/^ ://g'\
+		-e 's/ :/:/g'\
+		-e '/notes.php=NONE/d'\
+		-e 's/notes.php?//g'\
+		-e 's/Hiver [0-9]\{4\}/&-1/g'\
+		-e 's/Hiver //g'\
+		-e 's/Été [0-9]\{4\}/&-2/g'\
+		-e 's/Été //g'\
+		-e 's/Automne [0-9]\{4\}/&-3/g'\
+		-e 's/Automne //g'\
+		-e 's/ (/:/g'\
+		-e 's/)//g'\
+		-e 's/^://g'\
+		-e '/^\s*$/d' |\
+	sort -t: -k5,5r -k2,2 > $PARSED_FILE
 
 if [ "$1" = "all" ]; then
+	derniere_session=$(sed 1q $PARSED_FILE | awk -F':' '{print $5}')
 	while read cours
 	do
-		sigle=$(echo $cours | awk -F':' '{printf "%s - %s\n", $2, $1}')
-		print_notes $sigle
-		echo
+		if [ "$(echo $cours | awk -F':' '{print $5}')" = "$derniere_session" ]; then
+			sigle=$(echo $cours | awk -F':' '{printf "%s - %s\n", $2, $1}')
+			print_notes $sigle
+			echo
+		fi
 	done < $PARSED_FILE
 else
-	choice=$(cat $PARSED_FILE  | awk -F':' '{printf "%s - %s\n", $2, $1}' | fzf)
-	
+	choice=$(cat $PARSED_FILE  | awk -F':' '{printf "%s - %s - %s\n", $5, $2, $1}' | fzf)
 	if [ ! -z "$choice" ]; then
-		sigle=$(echo $choice | awk '{print $1}')
+		sigle=$(echo $choice | awk -F" - " '{print $2}')
 		print_notes $sigle
 	fi
 fi
