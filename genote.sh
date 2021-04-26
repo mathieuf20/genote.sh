@@ -1,11 +1,19 @@
 #!/bin/sh
 
 print_notes() {
-		url=$(grep $1 $PARSED_FILE | awk -F':' '{print $7}')
+		line=$(grep $1 $PARSED_FILE |\
+			sed \
+				-e 's/[0-9]\{4\}-1/Hiver &!/g' \
+				-e 's/-1!//g' \
+				-e 's/[0-9]\{4\}-2/Été &!/g' \
+				-e 's/-2!//g' \
+				-e 's/[0-9]\{4\}-3/Automne &!/g' \
+				-e 's/-3!//g')
+		url=$(echo ${line} | awk -F':' '{print $7}')
 		curl -G -s "https://www.usherbrooke.ca/genote/application/etudiant/notes.php" \
 			--data-urlencode "$url" -b $COOKIE_JAR > $NOTES_FILE$1
 	
-		echo $(grep $1 $PARSED_FILE | awk -F':' '{printf "%s - %s\\nEnseignant.e.s: %s\\nTrimestre: %s", $2, $1, $3, $5}')
+		echo $(echo ${line} | awk -F':' '{printf "%s - %s\\nEnseignant.e.s: %s\\nTrimestre: %s", $2, $1, $3, $5}')
 		echo ===========================================================
 		sed \
 			-e '1,/<table class="zebra"/d' \
