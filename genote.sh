@@ -13,8 +13,7 @@ print_notes() {
 		curl -G -s "https://www.usherbrooke.ca/genote/application/etudiant/notes.php" \
 			--data-urlencode "$url" -b $COOKIE_JAR > $NOTES_FILE$1
 	
-		echo $(echo ${line} | awk -F':' '{printf "%s - %s\\nEnseignant.e.s: %s\\nTrimestre: %s", $2, $1, $3, $5}')
-		echo ===========================================================
+		echo $(echo ${line} | awk -F':' '{printf "%s - %s\\nEnseignant.e.s: %s\\nTrimestre: %s", $2, $1, $3, $5}')\\n======================================================================================
 		sed \
 			-e '1,/<table class="zebra"/d' \
 			-e '/<\/table>/,$d' \
@@ -26,14 +25,14 @@ print_notes() {
 			-e '/<\/tr>/d' \
 			-e 's/<tr.*>//g' \
 			-e 's/<td>//g' \
-			-e 's/<\/td>/:/g' $NOTES_FILE$1 | \
+			-e 's/<\/td>\s*/:/g' $NOTES_FILE$1 | \
 		tr '\n' '+' | \
 		sed \
 			-e 's/^+//g'\
 			-e 's/:+/:/g' \
 			-e 's/+/\n/g' \
 			-e '/^$/d' | \
-		awk -F':' '{printf "%-20s | %-10s | %-10s | %-10s \n", $1, $2, $3, $4}'
+		awk -F':' '{printf "%-24s | %-12s | %-12s | %-12s | %-12s | %-12s \n", $1, $2, $3, $4, $5, $6}'
 }
 
 mkdir -p /tmp/genote
@@ -125,8 +124,7 @@ if [ "$1" = "last" -o "$1" = "all" ]; then
 	do
 		if [ "$1" = "all" -o "$(echo $cours | awk -F':' '{print $5}')" = "$derniere_session" ]; then
 			sigle=$(echo $cours | awk -F':' '{printf "%s - %s\n", $2, $1}')
-			print_notes $sigle
-			echo
+			(print_notes $sigle && echo) &
 		fi
 	done < $PARSED_FILE
 else
@@ -136,5 +134,7 @@ else
 		print_notes $sigle
 	fi
 fi
+
+wait
 
 rm -rf /tmp/genote > /dev/null
