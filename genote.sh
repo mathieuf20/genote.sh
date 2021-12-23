@@ -52,7 +52,6 @@ CAS_HOSTNAME=cas.usherbrooke.ca
 #Authentication details. This script only supports username/password login, but curl can handle certificate login if required
 USERNAME=$(pass show udes/username)
 PASSWORD=$(pass show udes/password)
-
 #Visit CAS and get a login form. This includes a unique ID for the form, which we will store in CAS_ID and attach to our form submission. jsessionid cookie will be set here
 curl -s -k -c $COOKIE_JAR https://$CAS_HOSTNAME/login?service=$ENCODED_DEST > $LOGIN_FORM
 CAS_ID=`grep name=.lt $LOGIN_FORM | sed 's/.*value..//' | sed 's/\".*//'`
@@ -126,7 +125,7 @@ if [ "$1" = "last" -o "$1" = "all" ]; then
 			sigle=$(echo $cours | awk -F':' '{printf "%s - %s\n", $2, $1}')
 			(print_notes $sigle && echo) &
 		fi
-	done < $PARSED_FILE
+	done < $PARSED_FILE 
 else
 	choice=$(cat $PARSED_FILE  | awk -F':' '{printf "%s - %s - %s\n", $5, $2, $1}' | fzf)
 	if [ ! -z "$choice" ]; then
