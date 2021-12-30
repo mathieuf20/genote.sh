@@ -18,6 +18,7 @@ print_notes() {
 			-e '1,/<table class="zebra"/d' \
 			-e '/<\/table>/,$d' \
 			-e '/^.*&nbsp.*$/d' \
+			-e '/^.*useTipsy.*/d' \
 			-e '/thead>/d' \
 			-e '/tbody/d' \
 			-e 's/^ *//g' \
@@ -136,4 +137,4 @@ fi
 
 wait
 
-rm -rf /tmp/genote > /dev/null
+#rm -rf /tmp/genote > /dev/null
