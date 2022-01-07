@@ -1,6 +1,6 @@
 #!/bin/sh
 
-print_notes() {
+get_notes() {
 		line=$(grep $1 $PARSED_FILE |\
 			sed \
 				-e 's/[0-9]\{4\}-1/Hiver &!/g' \
@@ -12,7 +12,18 @@ print_notes() {
 		url=$(echo ${line} | awk -F':' '{print $7}')
 		curl -G -s "https://www.usherbrooke.ca/genote/application/etudiant/notes.php" \
 			--data-urlencode "$url" -b $COOKIE_JAR > $NOTES_FILE$1
-	
+}
+
+print_notes() {
+		line=$(grep $1 $PARSED_FILE |\
+			sed \
+				-e 's/[0-9]\{4\}-1/Hiver &!/g' \
+				-e 's/-1!//g' \
+				-e 's/[0-9]\{4\}-2/Été &!/g' \
+				-e 's/-2!//g' \
+				-e 's/[0-9]\{4\}-3/Automne &!/g' \
+				-e 's/-3!//g')
+		url=$(echo ${line} | awk -F':' '{print $7}')
 		echo $(echo ${line} | awk -F':' '{printf "%s - %s\\nEnseignant.e.s: %s\\nTrimestre: %s", $2, $1, $3, $5}')\\n======================================================================================
 		sed \
 			-e '1,/<table class="zebra"/d' \
@@ -120,21 +131,33 @@ grep "\"coursetudiant\"" $COURS_FILE |\
 
 if [ "$1" = "last" -o "$1" = "all" ]; then
 	derniere_session=$(sed 1q $PARSED_FILE | awk -F':' '{print $5}')
+
+	while read cours
+	do
+		if [ "$1" = "all" -o "$(echo $cours | awk -F':' '{print $5}')" = "$derniere_session" ]; then
+			sigle=$(echo $cours | awk -F':' '{printf "%s", $2}')
+			get_notes $sigle &
+		fi
+	done < $PARSED_FILE 
+
+	wait $(jobs -p)
+	
 	while read cours
 	do
 		if [ "$1" = "all" -o "$(echo $cours | awk -F':' '{print $5}')" = "$derniere_session" ]; then
 			sigle=$(echo $cours | awk -F':' '{printf "%s - %s\n", $2, $1}')
-			(print_notes $sigle && echo) &
+			(print_notes $sigle && echo)
 		fi
 	done < $PARSED_FILE 
 else
 	choice=$(cat $PARSED_FILE  | awk -F':' '{printf "%s - %s - %s\n", $5, $2, $1}' | fzf)
 	if [ ! -z "$choice" ]; then
 		sigle=$(echo $choice | awk -F" - " '{print $2}')
+		get_notes $sigle
 		print_notes $sigle
 	fi
 fi
 
 wait
 
-#rm -rf /tmp/genote > /dev/null
+rm -rf /tmp/genote > /dev/null
